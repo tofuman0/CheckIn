@@ -1,0 +1,41 @@
+h1.companyname {
+	text-shadow: -1px -1px 0 #C0C0C0, 1px -1px 0 #C0C0C0, -1px 1px 0 #C0C0C0, 1px 1px 0 #C0C0C0;
+	color: #F9F9F0;
+	font-size: 5.0vw !important;
+}
+
+img.companylogo {
+	
+}
+
+p.logonmessage {
+	color: #B0B0B0;
+}
+
+.logonpage .page__background, .adminpage .page__background {
+	background-image: url("../carouselback.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: #F0F0F0;
+}
+
+.carouselleft {
+	background-image: url("../carouselback.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: #A8C0FF;
+}
+
+.carouselhome {
+	background-image: url("../carouselback.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: #F0F0F0;
+}
+
+.carouselright {
+	background-image: url("../carouselback.png");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-color: #FFFFC0;
+}
