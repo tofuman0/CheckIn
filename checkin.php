@@ -24,9 +24,12 @@ if(isset($_POST["id"]) && isset($_POST["pin"])) {
 		$result = $conn->query($query)->fetch();
 		if($result != null)
 		{
+			global $siteadmin_timeout;
 			session_start();
 			$_SESSION['adminaccess'] = 1;
 			$_SESSION['adminsiteid'] = $_POST["id"];
+			$_SESSION['admintimeout'] = time() + $siteadmin_timeout;
+			session_write_close();
 			include 'admin.php';
 			$conn = null;
 			die();
@@ -37,6 +40,21 @@ if(isset($_POST["id"]) && isset($_POST["pin"])) {
 	catch(PDOException $e) {
 	}
 }
+session_start();
+if (isset($_SESSION['adminaccess']) && $_SESSION['adminaccess'] == 1) {
+	if(isset($_POST["leaveadmin"]) || $_SESSION['admintimeout'] < time()) {
+		$_SESSION = array();
+		session_unset();
+		session_destroy();
+		session_write_close();
+	}
+	else {	
+		session_write_close();
+		include 'admin.php';
+		die();
+	}
+}
+session_write_close();
 {
 	$result = checkToken();
 	if(!isset($result))
@@ -66,12 +84,13 @@ if(isset($_POST["id"]) && isset($_POST["pin"])) {
 <html>
 	<head>
 		<title>Check-in</title>
-		<link rel="stylesheet" href="css/checkin.css">
 		<link rel="stylesheet" href="css/onsenui.css">
 		<link rel="stylesheet" href="css/onsen-css-components.min.css">
+		<link rel="stylesheet" href="css/checkin.css">
 		<script src="js/onsenui.min.js"></script>
 		<script src="js/core.functions.js"></script> 
 		<script src="js/functions.js"></script>  
+		<script src="js/checkin.functions.js"></script> 
 	</head>
 	<body>
 		<ons-page>
@@ -140,5 +159,20 @@ if(isset($_POST["id"]) && isset($_POST["pin"])) {
 				</ons-row>
 			</div>
 		</ons-modal>
+		<ons-dialog id="addvisitor">
+			<div style="text-align: center; padding: 10px;">
+				<h3>Visitor details:</h3>
+				<ons-input id="va-Title" modifier="underbar" placeholder="Title" float></ons-input> <br />
+				<ons-input required id="va-Firstname" modifier="underbar" placeholder="First Name" float></ons-input> <br />
+				<ons-input required id="va-Lastname" modifier="underbar" placeholder="Last Name" float></ons-input> <br />
+				<ons-input id="va-Company" modifier="underbar" placeholder="Company" float></ons-input> <br />
+				<ons-input id="va-Reg" modifier="underbar" placeholder="Vehicle Registration" float></ons-input> <br /><br />
+				<?php
+					echo "<ons-button onclick=\"addVisitor($SITEID)\">Add</ons-button>";
+				?>
+				<ons-button onclick="closeAddVisitor()">Cancel</ons-button>
+			  </p>
+			</div>
+		  </ons-dialog>
 	</body>
 </html>

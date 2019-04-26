@@ -39,3 +39,17 @@ p.logonmessage {
 	background-position: center;
 	background-color: #FFFFC0;
 }
+
+.message {
+	text-align: center;
+}
+
+.admBtn {
+	visibility: hidden;
+	margin: 6px;
+	padding: 0px 6px 0px 6px;
+}
+
+.admItem:hover ons-button {
+	visibility: visible;
+}

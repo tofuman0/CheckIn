@@ -1,39 +1,5 @@
-var pages = ["Check-in: Staff", "Check-in: Home", "Check-in: Visitor"];
-var leftButton = ['', '< Staff', '< Home'];
-var rightButton = ['Home >', 'Visitor >', ''];
-var adminPin = '';
-function idleTimer() {
-	var t;
-	window.onload = resetTimer;
-	window.onmousemove = resetTimer;
-	window.onmousedown = resetTimer;  // catches touchscreen presses as well      
-	window.ontouchstart = resetTimer; // catches touchscreen swipes as well 
-	window.onclick = resetTimer;      // catches touchpad clicks as well
-	window.onkeypress = resetTimer;   
-	window.addEventListener('scroll', resetTimer, true);
-	
-	get("get.php?type=visitor", getVisitors);
-	get("get.php?type=staff", getStaff);
-	
-	window.setInterval(function(){
-		if(carousel.getActiveIndex() === 1)
-		{
-			get("get.php?type=visitor", getVisitors);
-			get("get.php?type=staff", getStaff);
-		}
-	}, 10000);
-
-	function isIdle() {
-		carousel.setActiveIndex(1);
-		document.getElementById("title").textContent = pages[carousel.getActiveIndex()];
-	}
-
-	function resetTimer() {
-		clearTimeout(t);
-		t = setTimeout(isIdle, 10000);  // time is in milliseconds
-	}
-}
-idleTimer();
+var admType = 0;
+var admID = 0;
 function get(theUrl, callback) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.callback = callback;
@@ -42,35 +8,60 @@ function get(theUrl, callback) {
 	xmlHttp.onerror = xmlError;
     xmlHttp.open("GET", theUrl, true);
     xmlHttp.send(null);
-}
+};
+function qget(theUrl) {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", theUrl, true);
+    xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+	xmlHttp.send();
+};
 function qpost(theUrl, params) {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("POST", theUrl, true);
     xmlHttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	xmlHttp.send(params);
-}
+};
 function xmlSuccess() {
 	this.callback.apply(this, this.arguments);
-}
+};
 function xmlError() {
-}
+};
 function getVisitors() {
 	document.getElementById("visitorlist").innerHTML = this.responseText;
-}
+};
 function getStaff() {
 	document.getElementById("stafflist").innerHTML = this.responseText;
+};
+function getAdmVisitors() {
+	if(this.responseText != '') {
+		document.getElementById("admvisitor.html").innerHTML = this.responseText;
+	}
+	else {
+		post('checkin.php', {});
+	}
+};
+function getAdmStaff() {
+	if(this.responseText != '') {
+		document.getElementById("admstaff.html").innerHTML = this.responseText;
+	}
+	else {
+		post('checkin.php', {});
+	}
+};
+function admExtend() {
+	qget("get.php?type=admextend");
 }
 function next() {
 	carousel.next();
-}
+};
 function prev() {
 	carousel.prev();
-}
+};
 function titles() {
 	document.getElementById("title").textContent = pages[carousel.getActiveIndex()];
 	document.getElementById("leftBtn").textContent = leftButton[carousel.getActiveIndex()];
 	document.getElementById("rightBtn").textContent = rightButton[carousel.getActiveIndex()];
-}
+};
 function post(path, params) {
 	var form = document.createElement("form");
 	form.setAttribute("method", "post");
@@ -88,27 +79,152 @@ function post(path, params) {
 
 	document.body.appendChild(form);
 	form.submit();
-}
+};
 function setStaffState(id, entry) {
 	qpost('set.php', 'type=staff&state=' + entry.checked + '&id=' + id);
-}
+};
 function setVistorState(id, entry) {
 	qpost('set.php', 'type=visitor&state=' + entry.checked + '&id=' + id);
-}
-function adminPanel() {
-	// Called on admin panel appear
 };
-function enterAdmin(_id) {
-	if(_id != undefined) {
-		post('checkin.php', {id: _id.toString(), pin: adminPin.toString()});
+function addVisitor(siteid) {
+	if(document.getElementById("va-Firstname").value != '' && document.getElementById("va-Lastname").value != '') {
+		qpost('set.php', 'type=addvisitor' +
+			'&title=' + document.getElementById("va-Title").value +
+			'&fn=' + document.getElementById("va-Firstname").value +
+			'&ln=' + document.getElementById("va-Lastname").value +
+			'&cm=' + document.getElementById("va-Company").value +
+			'&rg=' + document.getElementById("va-Reg").value +
+			'&sid=' + siteid
+		);
+		closeAddVisitor();
+		get("get.php?type=visitor", getVisitors);
 	}
-	modalHide('adminpanel');
+	else {
+		alert("First and last names are required to create a visitor.");
+	}
 };
-function enterPin(pinNum) {
-	if (pinNum >= 0 && pinNum <= 9) {
-		adminPin = adminPin + pinNum.toString();
+function addAdmVisitor(siteid) {
+	if(document.getElementById("va-Firstname").value != '' && document.getElementById("va-Lastname").value != '') {
+		qpost('set.php', 'type=addvisitor' +
+			'&title=' + document.getElementById("va-Title").value +
+			'&fn=' + document.getElementById("va-Firstname").value +
+			'&ln=' + document.getElementById("va-Lastname").value +
+			'&cm=' + document.getElementById("va-Company").value +
+			'&rg=' + document.getElementById("va-Reg").value +
+			'&sid=' + siteid
+		);
+		closeAddVisitor();
+		get("get.php?type=admvisitor", getAdmVisitors);
 	}
+	else {
+		alert("First and last names are required to create a visitor.");
+	}
+};
+function addStaff(siteid) {
+	if(document.getElementById("sa-Firstname").value != '' && document.getElementById("sa-Lastname").value != '') {
+		qpost('set.php', 'type=addstaff' +
+			'&title=' + document.getElementById("sa-Title").value +
+			'&fn=' + document.getElementById("sa-Firstname").value +
+			'&ln=' + document.getElementById("sa-Lastname").value +
+			'&cm=' + document.getElementById("sa-Company").value +
+			'&rg=' + document.getElementById("sa-Reg").value +
+			'&sid=' + siteid
+		);
+		closeAddVisitor();
+		get("get.php?type=staff", getVisitors);
+	}
+	else {
+		alert("First and last names are required to create a visitor.");
+	}
+};
+function closeAddVisitor() {
+	document.getElementById("va-Title").value = "";
+	document.getElementById("va-Firstname").value = "";
+	document.getElementById("va-Lastname").value = "";
+	document.getElementById("va-Company").value = "";
+	document.getElementById("va-Reg").value = "";
+	hideDialog('addvisitor');
+	admExtend();
+};
+function closeAddStaff() {
+	document.getElementById("sa-Title").value = "";
+	document.getElementById("sa-Firstname").value = "";
+	document.getElementById("sa-Lastname").value = "";
+	document.getElementById("sa-Company").value = "";
+	document.getElementById("sa-Reg").value = "";
+	hideDialog('addstaff');
+	admExtend();
+};
+function admConfirmClose() {
+	document
+		.getElementById('adm-alert-dialog')
+		.hide();
+	admExtend();
+};
+function admConfirmDelete() {
+	if(admType === 0) {
+		qpost('set.php', 'type=admdeletevisitor' +
+				'&id=' + admID
+			);
+		var elem = document.getElementById("admVisitor_" + admID);
+		elem.parentElement.removeChild(elem);
+	} else {
+		qpost('set.php', 'type=admdeletestaff' +
+				'&id=' + admID
+			);
+		var elem = document.getElementById("admStaff_" + admID);
+		elem.parentElement.removeChild(elem);
+	}
+	admConfirmClose();
 }
+function admAddVisitor() {
+	admExtend();
+	showDialog('addvisitor');
+};
+function admAddStaff() {
+	admExtend();
+	showDialog('addstaff');
+};
+function admDeleteVisitor(id) {
+	admType = 0;
+	admID = id;
+	var dialog = document.getElementById('adm-alert-dialog');
+
+	if (dialog) {
+		dialog.show();
+	} else {
+		ons.createElement('alert-dialog.html', { append: true })
+		.then(function(dialog) {
+			dialog.show();
+		});
+	}
+	admExtend();
+};
+function admDeleteStaff(id) {
+	admType = 1;
+	admID = id;
+	var dialog = document.getElementById('adm-alert-dialog');
+
+	if (dialog) {
+		dialog.show();
+	} else {
+		ons.createElement('alert-dialog.html', { append: true })
+		.then(function(dialog) {
+			dialog.show();
+		});
+	}
+	admExtend();
+};
+function showDialog(id) {
+  document
+    .getElementById(id)
+    .show();
+};
+function hideDialog(id) {
+  document
+    .getElementById(id)
+    .hide();
+};
 function modalShow(type) {
 	var modal = document.getElementById(type);
 	if(modal != null)
@@ -124,7 +240,7 @@ function modalShow(type) {
 		};
 		modal.show(options);
 	}
-}
+};
 function modalHide(type) {
 	var modal = document.getElementById(type);
 	if(modal != null)
@@ -141,25 +257,6 @@ function modalHide(type) {
 		adminState = 0;
 		adminPin = '';
 	}
-}
-var adminState = 0;
-document.addEventListener('dragdown', function(event) {
-	if (event.target.matches('#title') && adminState === 0) {
-		adminState = 1;
-		modalShow('signoutpanel');
-	}
-});
-document.addEventListener('dragup', function(event) {
-	if (adminState === 1) {
-		adminState = 2;
-		modalHide('signoutpanel');
-		modalShow('adminpanel');
-	}
-});
-ons.ready(function() {
-	var carousel = document.addEventListener('postchange', function(event) {
-		titles();
-	});
-});
-document.querySelector('signoutpanel').onDeviceBackButton = modalHide('signoutpanel');
-document.querySelector('adminpanel').onDeviceBackButton = modalHide('adminpanel');
+};
+
+

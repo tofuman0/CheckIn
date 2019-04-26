@@ -106,7 +106,7 @@ function checkToken() {
 	try {
 		$conn = new PDO("mysql:host=$db_host;dbname=$db_name", $db_username, $db_password);
 		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$result = $conn->query("SELECT accounts.id, accounts.username, accounts.disabled, session.token, session.accountid, session.expire FROM session JOIN accounts ON accounts.id = session.accountid WHERE accounts.username = '$TOKEN[0]' AND session.token = '$TOKEN[1]' AND accounts.disabled = '0'")->fetch();
+		$result = $conn->query("SELECT accounts.id, accounts.username, accounts.disabled, accounts.site, session.token, session.accountid, session.expire FROM session JOIN accounts ON accounts.id = session.accountid WHERE accounts.username = '$TOKEN[0]' AND session.token = '$TOKEN[1]' AND accounts.disabled = '0'")->fetch();
 		$conn = null;
 		return $result;
 	}
@@ -167,7 +167,7 @@ function getStaff($SITEID) {
 	try {
 		$conn = new PDO("mysql:host=$db_host;dbname=$db_name", $db_username, $db_password);
 		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$result = $conn->query("SELECT id, firstname, lastname, jobtitle, signedin, thumbnail FROM staff WHERE siteid = $SITEID")->fetchall();
+		$result = $conn->query("SELECT id, firstname, lastname, jobtitle, signedin, thumbnail FROM staff WHERE siteid = $SITEID ORDER BY signedin DESC, firstname ASC")->fetchall();
 		$conn = null;
 		return $result;
 	}
@@ -185,7 +185,7 @@ function getVisitor($SITEID) {
 	try {
 		$conn = new PDO("mysql:host=$db_host;dbname=$db_name", $db_username, $db_password);
 		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$result = $conn->query("SELECT id, firstname, lastname, title, company, vehiclereg, signedin FROM visitors WHERE siteid = $SITEID")->fetchall();
+		$result = $conn->query("SELECT id, firstname, lastname, title, company, vehiclereg, signedin FROM visitors WHERE siteid = $SITEID ORDER BY signedin DESC, firstname ASC")->fetchall();
 		$conn = null;
 		return $result;
 	}
@@ -204,6 +204,81 @@ function setState($TYPE, $STATE, $ID) {
 		$conn = new PDO("mysql:host=$db_host;dbname=$db_name", $db_username, $db_password);
 		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$conn->query("UPDATE $TYPE SET signedin = $STATE WHERE id = $ID");
+		$conn = null;
+	}
+	catch(PDOException $e) {}
+}
+
+function addVisitor($SITEID, $TITLE, $FN, $LN, $CM, $RG) {
+	global $db_name;
+	global $db_username;
+	global $db_password;
+	global $db_host;
+	global $db_port;
+	if((strlen($FN) != 0) && (strlen($LN) != 0)) {
+		try {
+			$conn = new PDO("mysql:host=$db_host;dbname=$db_name", $db_username, $db_password);
+			$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$result = $conn->query("SELECT * FROM sites WHERE id = $SITEID")->fetch();
+			if($result != null) {
+				$query = "SELECT * FROM visitors WHERE siteid = $SITEID ";
+				if(strlen($TITLE) > 0) $query .= "AND title = X'$TITLE' ";
+				if(strlen($FN) > 0) $query .= "AND firstname = X'$FN' ";
+				if(strlen($LN) > 0) $query .= "AND lastname = X'$LN' ";
+				if(strlen($CM) > 0) $query .= "AND company = X'$CM' ";
+				$result = $conn->query($query)->fetch();
+				if($result == null) {
+					$query = "INSERT INTO visitors (siteid";
+					if(strlen($TITLE) > 0) $query .= ", title";
+					if(strlen($FN) > 0) $query .= ", firstname";
+					if(strlen($LN) > 0) $query .= ", lastname";
+					if(strlen($CM) > 0) $query .= ", company";
+					if(strlen($RG) > 0) $query .= ", vehiclereg";
+					$query .= ") VALUES ($SITEID";
+					if(strlen($TITLE) > 0) $query .= ", X'$TITLE'";
+					if(strlen($FN) > 0) $query .= ", X'$FN'";
+					if(strlen($LN) > 0) $query .= ", X'$LN'";
+					if(strlen($CM) > 0) $query .= ", X'$CM'";
+					if(strlen($RG) > 0) $query .= ", X'$RG'";
+					$query .= ")";
+					$conn->query($query);
+				}
+			}
+			$conn = null;
+		}
+		catch(PDOException $e) {}
+	}
+}
+function admDeleteVisitor($ID, $SITEID) {
+	global $db_name;
+	global $db_username;
+	global $db_password;
+	global $db_host;
+	global $db_port;
+	try {
+		$conn = new PDO("mysql:host=$db_host;dbname=$db_name", $db_username, $db_password);
+		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$result = $conn->query("SELECT * FROM sites WHERE id = $SITEID")->fetch();
+		if($result != null) {
+			$result = $conn->query("DELETE FROM visitors WHERE siteid = $SITEID AND id = $ID");
+		}
+		$conn = null;
+	}
+	catch(PDOException $e) {}
+}
+function admDeleteStaff($ID, $SITEID) {
+	global $db_name;
+	global $db_username;
+	global $db_password;
+	global $db_host;
+	global $db_port;
+	try {
+		$conn = new PDO("mysql:host=$db_host;dbname=$db_name", $db_username, $db_password);
+		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		$result = $conn->query("SELECT * FROM sites WHERE id = $SITEID")->fetch();
+		if($result != null) {
+			$result = $conn->query("DELETE FROM staff WHERE siteid = $SITEID AND id = $ID");
+		}
 		$conn = null;
 	}
 	catch(PDOException $e) {}

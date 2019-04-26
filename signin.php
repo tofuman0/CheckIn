@@ -62,9 +62,9 @@ if(isset($_POST["username"]) && isset($_POST["password"])) {
 <html>
 	<head>
 		<title>Check-in: Sign in</title>
-		<link rel="stylesheet" href="css/checkin.css">
 		<link rel="stylesheet" href="css/onsenui.css">
 		<link rel="stylesheet" href="css/onsen-css-components.min.css">
+		<link rel="stylesheet" href="css/checkin.css">
 		<script src="js/onsenui.min.js"></script>
 		<script src="js/core.functions.js"></script> 
 	</head>
