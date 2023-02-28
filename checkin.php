@@ -38,6 +38,7 @@ if(isset($_POST["id"]) && isset($_POST["pin"])) {
 			$conn = null;
 	}
 	catch(PDOException $e) {
+		echo $e;
 	}
 }
 session_start();
@@ -59,7 +60,7 @@ session_write_close();
 	$result = checkToken();
 	if(!isset($result))
 	{
-	login:
+		login:
 		setcookie('loginToken', '', time()-3600);
 		include 'signin.php';
 		die();
@@ -71,7 +72,14 @@ session_write_close();
 		$SITENAME = $result['sitename'];
 		$SITEMESSAGE = $result['sitemessage'];
 		$SITEID = $result['id'];
-		$SITELOGO = base64_encode($result['siteimage']);
+		if(isset($result['siteimage']))
+		{
+			$SITELOGO = base64_encode($result['siteimage']);
+		}
+		else
+		{
+			$SITELOGO = null;
+		}
 		$SITELOGOIMAGETYPE = $result['siteimagetype'];
 	}
 	else

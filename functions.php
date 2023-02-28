@@ -133,6 +133,10 @@ function getSiteDetails() {
 		$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$result = $conn->query("SELECT accounts.site, sites.companyname, sites.sitename, sites.id, sites.siteimage, sites.siteimagetype, sites.sitemessage FROM accounts JOIN sites ON accounts.site = sites.id WHERE accounts.username = X'$USERNAME' LIMIT 1")->fetch();
 		$conn = null;
+		if($result == false || $result == '')
+		{
+			$result = null;
+		}
 		return $result;
 	}
 	catch(PDOException $e) {
@@ -282,5 +286,50 @@ function admDeleteStaff($ID, $SITEID) {
 		$conn = null;
 	}
 	catch(PDOException $e) {}
+}
+# Initial avatar rendering
+# https://tqdev.com/2022-generate-avatars-initials-php
+# Created by: Maurits van der Schee
+function getCapitals(string $name): string
+{
+    $capitals = '';
+    $words = preg_split('/[\s-]+/', $name);
+    $words = [array_shift($words), array_pop($words)];
+    foreach ($words as $word) {
+        if (ctype_digit($word) && strlen($word) == 1) {
+            $capitals .= $word;
+        } else {
+            $first = grapheme_substr($word, 0, 1);
+            $capitals .= ctype_digit($first) ? '' : $first;
+        }
+    }
+    return strtoupper($capitals);
+}
+function getColor(string $name): string
+{
+    // level 600, see: materialuicolors.co
+    $colors = [
+        '#e53935', // red
+        '#d81b60', // pink
+        '#8e24aa', // purple
+        '#5e35b1', // deep-purple
+        '#3949ab', // indigo
+        '#1e88e5', // blue
+        '#039be5', // light-blue
+        '#00acc1', // cyan
+        '#00897b', // teal
+        '#43a047', // green
+        '#7cb342', // light-green
+        '#c0ca33', // lime
+        '#fdd835', // yellow
+        '#ffb300', // amber
+        '#fb8c00', // orange
+        '#f4511e', // deep-orange
+        '#6d4c41', // brown
+        '#757575', // grey
+        '#546e7a', // blue-grey
+    ];
+    $unique = hexdec(substr(md5($name), -8));
+    return $colors[$unique % count($colors)];
 }
 ?>

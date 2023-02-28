@@ -19,7 +19,7 @@ if(isset($_GET['type']))
 		{
 			goto visitorskip;
 		}
-		echo "<ul class=\"list\" style=\"overflow: auto; max-height: calc(100% - 50px)\">";
+		echo "<ul class=\"list\" style=\"overflow: none; max-height: calc(100% - 50px)\">";
 		for ($x = 0; $x < count($result); $x++) {
 			$reg = "";
 			if(strlen($result[$x]['company']) > 0 && strlen($result[$x]['vehiclereg']) > 0) $reg = "- ";
@@ -56,7 +56,7 @@ if(isset($_GET['type']))
 		{
 			goto staffskip;
 		}
-		echo "<ul class=\"list\" style=\"overflow: auto; max-height: 100%\">";
+		echo "<ul class=\"list\" style=\"overflow: none; max-height: 100%\">";
 		for ($x = 0; $x < count($result); $x++) {
 			echo "
 			<li class=\"list-item\">
@@ -69,7 +69,12 @@ if(isset($_GET['type']))
 			}
 			else
 			{
-				echo "<img class=\"list-item__thumbnail\" src=\"\\user.png\" alt=\"...\">";
+				$FIRSTNAME = $result[$x]['firstname'];
+				$LASTNAME = $result[$x]['lastname'];
+				$NAME = "$FIRSTNAME $LASTNAME";
+				$INITIALS = getCapitals($NAME);
+				$BACKCOLOUR = getColor($NAME);
+				echo "<svg class=\"list-item__thumbnail\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" style=\"display:block;\"><circle r=\"50\" cy=\"50\" cx=\"50\" style=\"fill:$BACKCOLOUR\"></circle><text x=\"50\" y=\"50\" dominant-baseline=\"central\" text-anchor=\"middle\" style=\"font-size:45px;fill:white;\">$INITIALS</text></svg>";
 			}
 			echo "</div>
 				<div class=\"list-item__center\">
@@ -137,8 +142,13 @@ if(isset($_GET['type']))
 					}
 					else
 					{
+						$FIRSTNAME = $result[$x]['firstname'];
+						$LASTNAME = $result[$x]['lastname'];
+						$NAME = "$FIRSTNAME $LASTNAME";
+						$INITIALS = getCapitals($NAME);
+						$BACKCOLOUR = getColor($NAME);
 						echo "<div class=\"left\">
-							<img class=\"list-item__thumbnail\" src=\"\\user.png\">
+							<svg class=\"list-item__thumbnail\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" style=\"display:block;\"><circle r=\"50\" cy=\"50\" cx=\"50\" style=\"fill:$BACKCOLOUR\"></circle><text x=\"50\" y=\"50\" dominant-baseline=\"central\" text-anchor=\"middle\" style=\"font-size:45px;fill:white;\">$INITIALS</text></svg>
 						</div>";
 					}
 					echo "<div class=\"center\">
